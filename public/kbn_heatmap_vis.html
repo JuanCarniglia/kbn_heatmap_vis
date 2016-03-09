@@ -1,3 +1,13 @@
 <div ng-controller="KbnHeatmapVisController" class="metric-vis">
-  <div class="metric-container" ng-model="metrics"></div>
+  <div class="metric-container" ng-model="metrics">
+    <div class="calibration" role="calibration">
+      <svg width="120" height="17"></svg>
+      <div role="description" class="description">
+        <label role="lessLabel"></label>
+        <label width="50px"></label>
+        <label role="moreLabel"></label>
+      </div>
+    </div>
+  <svg role="heatmap" class="heatmap"></svg>
+  </div>
 </div>

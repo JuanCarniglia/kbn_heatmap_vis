@@ -1,47 +1,5 @@
-text {
-	font-size: 11px;
-	pointer-events: none;
-}
-
-text.parent {
-	fill: #1f77b4;
-}
-
-circle {
-	fill: #ccc;
-	stroke: #999;
-	pointer-events: all;
-}
-
-circle.parent {
-	fill: #1f77b4;
-	fill-opacity: .4;
-	stroke: steelblue;
-	opacity: 0.4;
-	stroke-width: 2;
-	stroke-dasharray: 5 3;
-}
-
-circle.parent:hover {
-	stroke: #ff7f0e;
-	stroke-width: .5px;
-}
-
-circle.child {
-	pointer-events: none;
-	opacity: 0.6;
-	stroke-width: 1;
-	stroke: crimson;
-	stroke-dasharray: 1 2;
-}
-
-path {
-  stroke: #fff;
-  fill-rule: evenodd;
-}
-
 .days-hours-heatmap {padding: 20px 0 20px 0;width: 500px;margin: 0 auto;}
-.days-hours-heatmap .calibration{margin-bottom: 15px;width:400px;}
+.days-hours-heatmap .calibration{margin-bottom: 15px;width:400px;text-align: left;margin-left:60px;}
 .days-hours-heatmap .calibration .group{display: inline-block;}
 .days-hours-heatmap .calibration .description{width:108px;}
 .days-hours-heatmap .calibration .description>label:last-child{float:right;}

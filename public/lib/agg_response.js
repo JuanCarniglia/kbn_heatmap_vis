@@ -14,7 +14,7 @@ define(function (require) {
     function processEntryRecursive(data, parent) {
 
 		_.each(data.buckets, function(d, i) {
-			nodes.push( { "timestamp" : d.key_as_string.substring(0,19) , "value" : {"PM2.5" : d.doc_count }});
+			nodes.push( { "timestamp" : d.key_as_string.substring(0,19) , "value" : {"value" : d.doc_count }});
 		});
 
     };

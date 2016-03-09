@@ -12,18 +12,17 @@ define(function (require) {
             var heatmapAggResponse = Private(require('./lib/agg_response'));
 
 	        var svgRoot = $element[0];
-			var margin = 20;
+			var margin = 50;
 			var width = 700;
 			var height = 500;
 
 			var color = d3.scale.category20c();
 
+            var rect = null;
 
-			var itemSize = 18,
+			var itemSize = 10,
 			cellSize = itemSize-1,
-			width = 800,
-			height = 800,
-			margin = {top:20,right:20,bottom:20,left:25};
+			margin = {top:50,right:50,bottom:50,left:55};
 
 		  //formats
 		  var hourFormat = d3.time.format('%H'),
@@ -51,28 +50,51 @@ define(function (require) {
 			  .domain([0,24]),
 			yAxis = d3.svg.axis()
 			  .orient('left')
-			  .ticks(5)
+			  .ticks(12)
 			  .tickFormat(d3.format('02d'))
 			  .scale(yAxisScale);
 
-	        var node, root;
 
-	        var svg = d3.select(svgRoot);
+            var node, root;
 
-	        initCalibration();
-
-			var heatmap = svg.attr('width', width).attr('height', height).append('g').attr('width', width - margin.left - margin.right).attr('height', height - margin.top - margin.bottom).attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');var rect = null;
 
 	        var _buildVis = function _buildVis(root) {
 
-	            data = root;
+                initCalibration();
 
-	            data.forEach(function (valueObj) {
+                // Some legends and descriptions
+                d3.select('[role="lessLabel"]').value($scope.vis.params.lessLabel);
+                d3.select('[role="moreLabel"]').value($scope.vis.params.moreLabel);
+
+                if (!$scope.vis.params.showCalibration) {
+                    d3.select('[role="calibration"]').style({'display': 'none'});
+                } else d3.select('[role="calibration"]').style({'display': ''});
+
+                if (!$scope.vis.params.showDescription) {
+                    d3.select('[role="description"]').style({'display': 'none'});
+                } else d3.select('[role="description"]').style({'display': ''});
+
+
+                var svg = d3.select('[role="heatmap"]');
+
+                data = root;
+
+                var heatmap = svg
+                    .attr('width', width)
+                    .attr('height', height)
+                    .append('g')
+                    .attr('width', width - margin.left - margin.right)
+                    .attr('height', height - margin.top - margin.bottom)
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                var rect = null;
+
+                data.forEach(function (valueObj) {
 	                valueObj['date'] = timeFormat.parse(valueObj['timestamp']);
 	                var day = valueObj['day'] = monthDayFormat(valueObj['date']);
 
 	                var dayData = dailyValueExtent[day] = dailyValueExtent[day] || [1000, -1];
-	                var pmValue = valueObj['value']['PM2.5'];
+	                var pmValue = valueObj['value']['value'];
 	                dayData[0] = d3.min([dayData[0], pmValue]);
 	                dayData[1] = d3.max([dayData[1], pmValue]);
 	            });
@@ -91,16 +113,16 @@ define(function (require) {
 				  .attr('class','x axis')
 				  .call(xAxis)
 				.append('text')
-				  .text('date')
-				  .attr('transform','translate('+axisWidth+',-10)');
+				  .text($scope.vis.params.xAxisLabel)
+				  .attr('transform','translate('+axisWidth+',-20)');
 
 	            svg.append('g')
                     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
                     .attr('class', 'y axis')
                     .call(yAxis)
                     .append('text')
-                        .text('time')
-                        .attr('transform', 'translate(-10,' + axisHeight + ') rotate(-90)');
+                        .text($scope.vis.params.yAxisLabel)
+                        .attr('transform', 'translate(-30,' + axisHeight + ') rotate(-90)');
 
 				//render heatmap rects
 				dayOffset = dayFormat(dateExtent[0]);
@@ -119,51 +141,51 @@ define(function (require) {
 
 
 	            rect.filter(function (d) {
-	                return d.value['PM2.5'] > 0;
+	                return d.value['value'] > 0;
 	            }).append('title').text(function (d) {
-	                return monthDayFormat(d.date) + ' ' + d.value['PM2.5'];
+	                return monthDayFormat(d.date) + ' ' + d.value['value'];
 	            });
 
-
-				renderColor();
-	        };
-
-
-
-			function initCalibration() {
-				d3.select('[role="calibration"][role="example"]')
-                    .select('svg')
-                        .selectAll('rect')
-                            .data(colorCalibration)
-                            .enter()
-                            .append('rect')
-                            .attr('width', cellSize)
-                            .attr('height', cellSize)
-                            .attr('x', function (d, i) {
-                                return i * itemSize;
-				            })
-                            .attr('fill', function (d) {
-					            return d;
-				            });
-			};
-
-			function renderColor() {
-				var renderByCount = true; //document.getElementsByName('displayType')[0].checked;
+                var renderByCount = true;
 
 				rect.filter(function (d) {
-					return d.value['PM2.5'] >= 0;
+					return d.value['value'] >= 0;
 				}).transition().delay(function (d) {
 					return (dayFormat(d.date) - dayOffset) * 15;
 				}).duration(500).attrTween('fill', function (d, i, a) {
 					//choose color dynamicly
 					var colorIndex = d3.scale.quantize().range([0, 1, 2, 3, 4, 5]).domain(renderByCount ? [0, 500] : dailyValueExtent[d.day]);
 
-					return d3.interpolate(a, colorCalibration[colorIndex(d.value['PM2.5'])]);
+					return d3.interpolate(a, colorCalibration[colorIndex(d.value['value'])]);
 				});
-			}
+
+
+
+	        };
+
+
+
+			function initCalibration() {
+
+                var svgCalibration = d3.select('[role="calibration"]');
+
+				svgCalibration.select('svg')
+                    .selectAll('rect')
+                    .data(colorCalibration)
+                    .enter()
+                    .append('rect')
+                    .attr('width', cellSize)
+                    .attr('height', cellSize)
+                    .attr('x', function (d, i) {
+                        return i * itemSize;
+		            })
+                    .attr('fill', function (d) {
+			            return d;
+		            });
+			};
 
 			var _render = function _render(data) {
-				d3.select(svgRoot).selectAll('svg').remove();
+				d3.select('[role="heatmap"]').selectAll('g').remove();
 				_buildVis(data.data);
 			};
 
