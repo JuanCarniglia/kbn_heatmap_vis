@@ -63,8 +63,11 @@ define(function (require) {
                 initCalibration();
 
                 // Some legends and descriptions
-                d3.select('[role="lessLabel"]').value($scope.vis.params.lessLabel);
-                d3.select('[role="moreLabel"]').value($scope.vis.params.moreLabel);
+                d3.select('[role="lessLabel"]').text($scope.vis.params.lessLabel);
+                d3.select('[role="moreLabel"]').text($scope.vis.params.moreLabel);
+
+                d3.select('[role="xAxisLabel"]').text($scope.vis.params.xAxisLabel);
+                d3.select('[role="yAxisLabel"]').text($scope.vis.params.yAxisLabel);
 
                 if (!$scope.vis.params.showCalibration) {
                     d3.select('[role="calibration"]').style({'display': 'none'});
