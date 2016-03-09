@@ -1,3 +1,5 @@
+# WARNING - NOT WORKING - WILL BE IN A WHILE - STAY TUNED
+
 # Kibana Heatmap Visualization Plugin
 
 This is a Heatmap diagram visType for Kibana, version 4.4.1.
