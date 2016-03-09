@@ -14,7 +14,7 @@ define(function (require) {
     return new TemplateVisType({
       name: 'kbn_heatmap',
       title: 'Heatmap Diagram',
-      icon: 'fa-life-ring',
+      icon: 'fa-table',
       description: 'Cool D3 Heatmap',
       template: require('plugins/kbn_heatmap_vis/kbn_heatmap_vis.html'),
       params: {
@@ -42,10 +42,10 @@ define(function (require) {
         {
           group: 'buckets',
           name: 'segment',
-          title: 'Ring',
+          title: 'Time Frame',
           aggFilter: '!geohash_grid',
           min: 0,
-          max: 5
+          max: 1
         }
       ]),
       requiresSearch: true

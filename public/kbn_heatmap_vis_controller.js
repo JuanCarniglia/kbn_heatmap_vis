@@ -1,197 +1,177 @@
 define(function (require) {
-  var module = require('ui/modules').get('kibana/kbn_heatmap_vis', ['kibana']);
-  var d3 = require('d3');
-  var _ = require('lodash');
-  var $ = require('jquery');
 
-  var formatNumber = d3.format(',.0f');
+    var module = require('ui/modules').get('kibana/kbn_heatmap_vis', ['kibana']);
 
-  module.controller('KbnSunburstVisController', function ($scope, $element, $rootScope, Private) {
-    var sunburstAggResponse = Private(require('./lib/agg_response'));
+    var d3 = require('d3');
+    var _ = require('lodash');
+    var $ = require('jquery');
 
-    var svgRoot = $element[0];
-    var margin = 20;
-    var width = 700;
-    var height = 500;
+    module.controller('KbnHeatmapVisController',
+        function ($scope, $element, $rootScope, Private) {
 
-    var x = d3.scale.linear().range([0, 2 * Math.PI]);
-    var y = d3.scale.linear().range([0, radius]);
-    var color = d3.scale.category20c();
-    var div;
+            var heatmapAggResponse = Private(require('./lib/agg_response'));
 
-    var node, root;
+	        var svgRoot = $element[0];
+			var margin = 20;
+			var width = 700;
+			var height = 500;
 
-    div = d3.select(svgRoot);
+			var color = d3.scale.category20c();
 
 
-    //UI configuration
-    var itemSize = 18,
-    cellSize = itemSize-1,
-    margin = {top:20,right:20,bottom:20,left:25};
+			var itemSize = 18,
+			cellSize = itemSize-1,
+			width = 800,
+			height = 800,
+			margin = {top:20,right:20,bottom:20,left:25};
 
-    //formats
-    var hourFormat = d3.time.format('%H'),
-    dayFormat = d3.time.format('%j'),
-    timeFormat = d3.time.format('%Y-%m-%dT%X'),
-    monthDayFormat = d3.time.format('%m.%d');
+		  //formats
+		  var hourFormat = d3.time.format('%H'),
+			dayFormat = d3.time.format('%j'),
+			timeFormat = d3.time.format('%Y-%m-%dT%X'),
+			monthDayFormat = d3.time.format('%m.%d');
 
-    //data vars for rendering
-    var dateExtent = null,
-    data = null,
-    dayOffset = 0,
-    colorCalibration = ['#f6faaa','#FEE08B','#FDAE61','#F46D43','#D53E4F','#9E0142'],
-    dailyValueExtent = {};
+		  //data vars for rendering
+		  var dateExtent = null,
+			data = null,
+			dayOffset = 0,
+			colorCalibration = ['#f6faaa','#FEE08B','#FDAE61','#F46D43','#D53E4F','#9E0142'],
+			dailyValueExtent = {};
 
-    //axises and scales
-    var axisWidth = 0 ,
-    axisHeight = itemSize*24,
-    xAxisScale = d3.time.scale(),
-    xAxis = d3.svg.axis()
-    .orient('top')
-    .ticks(d3.time.days,3)
-    .tickFormat(monthDayFormat),
-    yAxisScale = d3.scale.linear()
-    .range([0,axisHeight])
-    .domain([0,24]),
-    yAxis = d3.svg.axis()
-    .orient('left')
-    .ticks(5)
-    .tickFormat(d3.format('02d'))
-    .scale(yAxisScale);
+		  //axises and scales
+		  var axisWidth = 0 ,
+			axisHeight = itemSize*24,
+			xAxisScale = d3.time.scale(),
+			xAxis = d3.svg.axis()
+			  .orient('top')
+			  .ticks(d3.time.days,3)
+			  .tickFormat(monthDayFormat),
+			yAxisScale = d3.scale.linear()
+			  .range([0,axisHeight])
+			  .domain([0,24]),
+			yAxis = d3.svg.axis()
+			  .orient('left')
+			  .ticks(5)
+			  .tickFormat(d3.format('02d'))
+			  .scale(yAxisScale);
 
-    initCalibration();
+	        var node, root;
 
-    var svg = d3.select('[role="heatmap"]');
-    var heatmap = svg
-    .attr('width',width)
-    .attr('height',height)
-    .append('g')
-    .attr('width',width-margin.left-margin.right)
-    .attr('height',height-margin.top-margin.bottom)
-    .attr('transform','translate('+margin.left+','+margin.top+')');
-    var rect = null;
+	        var svg = d3.select(svgRoot);
 
-    var _buildVis = function (root) {
+	        initCalibration();
 
-      data = root;
-      data.forEach(function(valueObj){
-        valueObj['date'] = timeFormat.parse(valueObj['timestamp']);
-        var day = valueObj['day'] = monthDayFormat(valueObj['date']);
+			var heatmap = svg.attr('width', width).attr('height', height).append('g').attr('width', width - margin.left - margin.right).attr('height', height - margin.top - margin.bottom).attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');var rect = null;
 
-        var dayData = dailyValueExtent[day] = (dailyValueExtent[day] || [1000,-1]);
-        var pmValue = valueObj['value']['PM2.5'];
-        dayData[0] = d3.min([dayData[0],pmValue]);
-        dayData[1] = d3.max([dayData[1],pmValue]);
-      });
+	        var _buildVis = function _buildVis(root) {
 
-      dateExtent = d3.extent(data,function(d){
-        return d.date;
-      });
+	            data = root;
 
-      axisWidth = itemSize*(dayFormat(dateExtent[1])-dayFormat(dateExtent[0])+1);
+	            data.forEach(function (valueObj) {
+	                valueObj['date'] = timeFormat.parse(valueObj['timestamp']);
+	                var day = valueObj['day'] = monthDayFormat(valueObj['date']);
 
-      //render axises
-      xAxis.scale(xAxisScale.range([0,axisWidth]).domain([dateExtent[0],dateExtent[1]]));
-      svg.append('g')
-      .attr('transform','translate('+margin.left+','+margin.top+')')
-      .attr('class','x axis')
-      .call(xAxis)
-      .append('text')
-      .text('date')
-      .attr('transform','translate('+axisWidth+',-10)');
+	                var dayData = dailyValueExtent[day] = dailyValueExtent[day] || [1000, -1];
+	                var pmValue = valueObj['value']['PM2.5'];
+	                dayData[0] = d3.min([dayData[0], pmValue]);
+	                dayData[1] = d3.max([dayData[1], pmValue]);
+	            });
 
-      svg.append('g')
-      .attr('transform','translate('+margin.left+','+margin.top+')')
-      .attr('class','y axis')
-      .call(yAxis)
-      .append('text')
-      .text('time')
-      .attr('transform','translate(-10,'+axisHeight+') rotate(-90)');
+	            dateExtent = d3.extent(data, function (d) {
+	                return d.date;
+	            });
 
-      //render heatmap rects
-      dayOffset = dayFormat(dateExtent[0]);
-      rect = heatmap.selectAll('rect')
-      .data(data)
-      .enter().append('rect')
-      .attr('width',cellSize)
-      .attr('height',cellSize)
-      .attr('x',function(d){
-        return itemSize*(dayFormat(d.date)-dayOffset);
-      })
-      .attr('y',function(d){
-        return hourFormat(d.date)*itemSize;
-      })
-      .attr('fill','#ffffff');
+	            axisWidth = itemSize * (dayFormat(dateExtent[1]) - dayFormat(dateExtent[0]) + 1);
 
-      rect.filter(function(d){ return d.value['PM2.5']>0;})
-      .append('title')
-      .text(function(d){
-        return monthDayFormat(d.date)+' '+d.value['PM2.5'];
-      });
+				//render axises
+				xAxis.scale(xAxisScale.range([0,axisWidth]).domain([dateExtent[0],dateExtent[1]]));
 
-      renderColor();
+				svg.append('g')
+				  .attr('transform','translate('+margin.left+','+margin.top+')')
+				  .attr('class','x axis')
+				  .call(xAxis)
+				.append('text')
+				  .text('date')
+				  .attr('transform','translate('+axisWidth+',-10)');
+
+	            svg.append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+                    .attr('class', 'y axis')
+                    .call(yAxis)
+                    .append('text')
+                        .text('time')
+                        .attr('transform', 'translate(-10,' + axisHeight + ') rotate(-90)');
+
+				//render heatmap rects
+				dayOffset = dayFormat(dateExtent[0]);
+				rect = heatmap.selectAll('rect')
+					.data(data)
+					.enter().append('rect')
+					  .attr('width',cellSize)
+					  .attr('height',cellSize)
+					  .attr('x',function(d){
+							return itemSize*(dayFormat(d.date)-dayOffset);
+						})
+					.attr('y',function(d){
+						return hourFormat(d.date)*itemSize;
+						})
+					.attr('fill','#ffffff');
+
+
+	            rect.filter(function (d) {
+	                return d.value['PM2.5'] > 0;
+	            }).append('title').text(function (d) {
+	                return monthDayFormat(d.date) + ' ' + d.value['PM2.5'];
+	            });
+
+
+				renderColor();
+	        };
+
+
+
+			function initCalibration() {
+				d3.select('[role="calibration"][role="example"]')
+                    .select('svg')
+                        .selectAll('rect')
+                            .data(colorCalibration)
+                            .enter()
+                            .append('rect')
+                            .attr('width', cellSize)
+                            .attr('height', cellSize)
+                            .attr('x', function (d, i) {
+                                return i * itemSize;
+				            })
+                            .attr('fill', function (d) {
+					            return d;
+				            });
+			};
+
+			function renderColor() {
+				var renderByCount = true; //document.getElementsByName('displayType')[0].checked;
+
+				rect.filter(function (d) {
+					return d.value['PM2.5'] >= 0;
+				}).transition().delay(function (d) {
+					return (dayFormat(d.date) - dayOffset) * 15;
+				}).duration(500).attrTween('fill', function (d, i, a) {
+					//choose color dynamicly
+					var colorIndex = d3.scale.quantize().range([0, 1, 2, 3, 4, 5]).domain(renderByCount ? [0, 500] : dailyValueExtent[d.day]);
+
+					return d3.interpolate(a, colorCalibration[colorIndex(d.value['PM2.5'])]);
+				});
+			}
+
+			var _render = function _render(data) {
+				d3.select(svgRoot).selectAll('svg').remove();
+				_buildVis(data.data);
+			};
+
+			$scope.$watch('esResponse', function (resp) {
+				if (resp) {
+					var chartData = heatmapAggResponse($scope.vis, resp);
+					_render(chartData);
+				}
+			});
+        });
     });
-
-    function initCalibration(){
-      d3.select('[role="calibration"] [role="example"]').select('svg')
-      .selectAll('rect').data(colorCalibration).enter()
-      .append('rect')
-      .attr('width',cellSize)
-      .attr('height',cellSize)
-      .attr('x',function(d,i){
-        return i*itemSize;
-      })
-      .attr('fill',function(d){
-        return d;
-      });
-
-      //bind click event
-      d3.selectAll('[role="calibration"] [name="displayType"]').on('click',function(){
-        renderColor();
-      });
-    }
-
-    function renderColor(){
-      var renderByCount = document.getElementsByName('displayType')[0].checked;
-
-      rect
-      .filter(function(d){
-        return (d.value['PM2.5']>=0);
-      })
-      .transition()
-      .delay(function(d){
-        return (dayFormat(d.date)-dayOffset)*15;
-      })
-      .duration(500)
-      .attrTween('fill',function(d,i,a){
-        //choose color dynamicly
-        var colorIndex = d3.scale.quantize()
-        .range([0,1,2,3,4,5])
-        .domain((renderByCount?[0,500]:dailyValueExtent[d.day]));
-
-        return d3.interpolate(a,colorCalibration[colorIndex(d.value['PM2.5'])]);
-      });
-    }
-
-    //extend frame height in `http://bl.ocks.org/`
-    d3.select(self.frameElement).style("height", "600px");
-
-  };
-
-
-
-
-  var _render = function (data) {
-    d3.select(svgRoot).selectAll('svg').remove();
-    _buildVis(data.children);
-  };
-
-  $scope.$watch('esResponse', function (resp) {
-    if (resp) {
-      var chartData = sunburstAggResponse($scope.vis, resp);
-      _render(chartData);
-    }
-  });
-
-});
-});
