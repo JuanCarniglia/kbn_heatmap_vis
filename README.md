@@ -1,13 +1,9 @@
-# WARNING - NOT WORKING - WILL BE IN A WHILE - STAY TUNED
-
 # Kibana Heatmap Visualization Plugin
 
 This is a Heatmap diagram visType for Kibana, version 4.4.1.
 
 This plugin is based on the exceptional D3 library,
 by @mbostock [D3 Gallery](https://github.com/mbostock/d3/wiki/Gallery) (Thanks!).
-
-![Screenshot]()
 
 ##Installation Steps
 
@@ -27,5 +23,20 @@ cp -R build/kbn_heatmap_vis/ KIBANA_HOME/installedPlugins
 Basically, this plugin takes the information from Elasticsearch, generates a JSON structure, which is:
 
 ```json
-{}
+{ "data" : [
+  { "timestamp" : "2016-03-01T09:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T10:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T11:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T12:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T13:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T14:00:00", "value" : { "value" : "1000" }},
+  { "timestamp" : "2016-03-01T15:00:00", "value" : { "value" : "1000" }}
+  ]
+}
 ```
+
+This visualization displays a grid whith columns for days and rows for hours. Each square is then fill
+with a different color, depending on the document count for that particular date/hour.
+
+Still there is some work to do, but I'll get to it soon.
+
