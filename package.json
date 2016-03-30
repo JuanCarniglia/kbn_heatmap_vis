@@ -1,10 +1,10 @@
 {
-  "name": "kbn_heatmap_vis",
+  "name": "kbn_boxplot_vis",
   "version": "1.0.0",
   "authors": [
     "Juan Carniglia <juan.carniglia@gmail.com>"
   ],
-  "description": "heatmap diagram visualization plugin",
+  "description": "Boxplot diagram visualization plugin",
   "main": "index.js",
   "license": "Apache-2.0",
   "homepage": "http://kibana.logstash.es/",
